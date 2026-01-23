@@ -4,7 +4,7 @@ Key Features:
 - Automatic Scanning: The tool automatically scans the BIN file for ESKONF tables (searches for the AA FF 00 pattern with strict validation to avoid false positives).
 - Visual Interface: Clearly labels all 28 components (Injectors, Coils, N75, SAI, etc.) across 7 bytes.
 - Quick Presets: One-click buttons to disable common components like KAT (LSHHK), SAI, N249, EVAP, or VVT.
-- Extended Search: Optional mode for non-standard or previously modified files (toggles FF FF 00 search).
+- Extended Search: Optional mode for earlier ECUs or previously modified files (toggles FF FF 00 search).
 - Manual HEX Entry: You can paste a 14-character HEX string to decode and modify it manually.
 
 How to use:
