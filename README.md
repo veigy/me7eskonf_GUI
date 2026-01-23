@@ -15,3 +15,5 @@ Save the modified BIN or copy new HEX code
 IMPORTANT: This tool does NOT fix checksums. You must use ME7Sum or a similar tool before flashing.
 
 Source code: Python script for those who want to review or improve the code (requires customtkinter).
+
+![ME7.5 ESKONF Editor GUI](eskonf_gui.png)
