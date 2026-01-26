@@ -33,22 +33,39 @@ class EskonfTool(ctk.CTk):
         self.raw_data = None
         self.found_results = []
 
+        self.layouts = ["R4 5V 1.8T", "R4 5V 2.0S"]
+        self.layouts_map = {"R4 5V 1.8T":0, "R4 5V 2.0S":1}
+
         # Component mapping for presets
-        self.comp_map = {
+        self.comp_map = [{
             "LSHHK": 12, "EFLA": 13, "LDR": 14, "TEV": 15,
             "BKV": 16, "AAV": 18, "MIL": 19, "EKP": 22,
-            "SLP": 23, "ULT": 24, "UAGR": 25, "SLV": 26, "NWS": 27
-        }
+            "SLP": 23, "ULT": 24, "EAGR": 25, "SLV": 26, "NWS": 27
+        },
+        {   ## not implemented in buttons????
+            "LSHHK": 12, "EFLA": 13, "LDR": 14, "TEV": 15,
+            "BKV": 16, "ETR": 18, "MIL": 19, "EKP": 22,
+            "SLP": 23, "SU": 24, "EAGR": 25, "SLV": 26
+        }]
 
-        self.comp_names = [
+        self.comp_names = [[
             "Ignition coil 4 (ZUE4)", "Ignition coil 3 (ZUE3)", "Ignition coil 2 (ZUE2)", "Ignition coil 1 (ZUE1)",
             "Not configured (NC)", "Not configured (NC)", "Not configured (NC)", "Not configured (NC)",
             "Fuel injector 4 (EV4)", "Fuel injector 3 (EV3)", "Fuel injector 2 (EV2)", "Fuel injector 1 (EV1)",
             "Rear O2 heater (LSHHK)", "Error lamp (EFLA)", "N75 Boost (LDR)", "N80 Evap (TEV)",
             "Brake booster (BKV)", "Not configured (NC)", "Shut off valve (AAV)", "OBD lamp (MIL)",
             "Not configured (NC)", "Not configured (NC)", "Fuel pump relay (EKP)", "SAI pump relay (SLP)",
-            "N249 Diverter (ULT)", "EGR valve (UAGR)", "SAI solenoid (SLV)", "VVT N205 (NWS)"
-        ]
+            "N249 Diverter (ULT)", "EGR valve (EAGR)", "SAI solenoid (SLV)", "VVT N205 (NWS)"
+        ],
+        [
+            "Ignition coil 4 (ZUE4)", "Ignition coil 3 (ZUE3)", "Ignition coil 2 (ZUE2)", "Ignition coil 1 (ZUE1)",
+            "Not configured (NC)", "Not configured (NC)", "Not configured (NC)", "Not configured (NC)",
+            "Fuel injector 4 (EV4)", "Fuel injector 3 (EV3)", "Fuel injector 2 (EV2)", "Fuel injector 1 (EV1)",
+            "Rear O2 heater (LSHHK)", "Error lamp (EFLA)", "continous camshaft adjust (KNWS)", "N80 Evap (TEV)",
+            "Brake booster (BKV)", "Coolant Fan 1 (LUES1)", "electronic thermostat (ETR)", "OBD lamp (MIL)",
+            "Not configured (NC)", "Not configured (NC)", "Fuel pump relay (EKP)", "SAI pump relay (SLP)",
+            "Intake manifold Switch (SU)", "EGR valve (EAGR)", "SAI solenoid (SLV)", "Not configured (NC)"
+        ]]
 
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -60,6 +77,13 @@ class EskonfTool(ctk.CTk):
         ctk.CTkLabel(self.sidebar, text="File Input", font=("Arial", 14, "bold")).pack(pady=(20, 5))
         self.btn_open = ctk.CTkButton(self.sidebar, text="Load BIN File", command=self.open_file)
         self.btn_open.pack(padx=20, pady=10)
+
+        self.optionmenu_var = ctk.StringVar(value=self.layouts[0])
+        self.optionmenu = ctk.CTkOptionMenu(self.sidebar,values=[self.layouts[0], self.layouts[1]],
+                                         command=self.optionmenu_callback,
+                                         variable=self.optionmenu_var)
+        self.optionmenu.pack(padx=20, pady=10)
+        self.optionmenuNum = self.layouts_map.get(self.layouts[0])
 
         # Extended Search Option (Default OFF)
         self.ext_search_var = ctk.BooleanVar(value=False)
@@ -131,7 +155,7 @@ class EskonfTool(ctk.CTk):
                                fg_color="#34495e", command=lambda c=comps, s=idx: self.apply_preset(s, c))
             btn.grid(row=(i//3)+1, column=i%3, padx=4, pady=2)
 
-        combos, byte_labels = [], []
+        combos, byte_labels, comboLabels = [], [], []
         for b_idx in range(7):
             row = ctk.CTkFrame(addr_frame, fg_color="transparent")
             row.pack(fill="x", padx=15, pady=2)
@@ -141,10 +165,12 @@ class EskonfTool(ctk.CTk):
                 combo = ctk.CTkOptionMenu(row, values=["Y (00)", "? (01)", "S (10)", "N (11)"], 
                                          width=130, height=30, text_color="black", font=("Arial", 13, "bold"))
                 combo.grid(row=0, column=p_idx+1, padx=4, pady=2); combos.append(combo)
-                ctk.CTkLabel(row, text=self.comp_names[b_idx*4+p_idx], font=("Arial", 10), text_color="white").grid(row=1, column=p_idx+1, pady=(0,2))
+                comboLabel = ctk.CTkLabel(row, text=self.comp_names[self.optionmenuNum][b_idx*4+p_idx], font=("Arial", 10), text_color="white")
+                comboLabel.grid(row=1, column=p_idx+1, pady=(0,2))
+                comboLabels.append(comboLabel)
 
         return {"frame": addr_frame, "title": title_lbl, "orig_hex": orig_hex_lbl, "mod_hex": mod_hex_lbl, 
-                "btn_copy": btn_copy, "combos": combos, "byte_labels": byte_labels}
+                "btn_copy": btn_copy, "combos": combos, "byte_labels": byte_labels, "comboLabels": comboLabels}
 
     def parse_eskonf_strict(self, data):
         res = []
@@ -174,7 +200,7 @@ class EskonfTool(ctk.CTk):
     def apply_preset(self, slot_idx, components):
         slot = self.tables[slot_idx]
         for comp in components:
-            idx = self.comp_map.get(comp)
+            idx = self.comp_map[self.optionmenuNum].get(comp)
             if idx is not None: slot["combos"][idx].set("N (11)")
         self.refresh_hex(slot_idx)
 
@@ -241,5 +267,14 @@ class EskonfTool(ctk.CTk):
     def get_color(self, v):
         return {"00": "#2ecc71", "11": "#e74c3c", "10": "#f1c40f"}.get(v[3:5], "#95a5a6")
 
+    def optionmenu_callback(self, choice):
+        self.optionmenuNum = self.layouts_map.get(choice)
+        for table in self.tables:
+            counter = 0
+            for comboLabel in table["comboLabels"]:
+                comboLabel.configure(text = self.comp_names[self.optionmenuNum][counter])
+                counter += 1
+
 if __name__ == "__main__":
     EskonfTool().mainloop()
+
